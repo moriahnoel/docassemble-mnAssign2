@@ -1,0 +1,90 @@
+metadata:
+ title: Assignment 2 
+ description: user, DAList, generic object modifier, yesno, select one, select multiple
+ example start: 12
+ example end: 74
+#username
+#generic object modifier, single question household names, DAList
+#yesno modifier - eligible true false
+#multiple choice fields - select one (matter), select all
+#signature field
+---
+modules:
+ - docassemble.base.core
+ - docassemble.base.util
+---
+objects:
+ - client_household: DAList.using(object_type=Individual, there_are_any=True)
+---
+mandatory: true
+code: |
+ # INTERVIEW FLOW BLOCK
+ client_household
+ matter
+ health
+ eligible
+ signature
+---
+question: |
+ Hello! Please enter your name.
+fields:
+ - First Name: client_household[0].name.first
+ - Last Name: client_household[0].name.last
+---
+question: |
+ Please enter the name of the ${ordinal(i)} household member - 
+fields:
+ - First Name: client_household[i].name.first
+ - Last Name: client_household[i].name.last
+---
+subquestion: |
+ To name another household member, click 'Add'.
+question: |
+ If there are no other members of your household to identify, click 'Next'.
+field: client_household.there_is_another
+buttons:
+- Add: True
+- Next: False
+---
+question: |
+ What type of legal issue do you have?
+field: matter
+choices:
+ - Criminal: criminal
+ - Family: family
+ - Appeal: appeal
+ - Other: other
+---
+question: |
+  Are you:
+fields:
+ - "Select all that apply": health
+   datatype: checkboxes
+   choices:
+     - Slowly going crazy: slowly
+     - Already there: crazy
+     - Completely fine: fine
+---
+question: |
+  Can you afford a lawyer?
+noyes: eligible
+---
+question: |
+  Your household includes: ${ client_household }
+subquestion: |
+  Please sign below and click continue to submit your application for legal assistance with ${ matter } as of ${today()}.
+signature: signature
+under: |
+  ${client_household[0]}
+---
+mandatory: true
+question: | 
+ Thank you, ${client_household[0]}.
+subquestion: |
+ % if eligible == True:
+   We will review your application.
+ % else:
+   We reject your application.
+ % endif
+exit: exit
+---
